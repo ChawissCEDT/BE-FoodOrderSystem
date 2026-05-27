@@ -1,6 +1,8 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend.Data;
+using Backend.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,27 +23,33 @@ namespace Backend.Controllers
         // GET: api/dashboard/summary
         [HttpGet("summary")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetSummary()
+        public async Task<IActionResult> GetSummary([FromQuery] int? userId)
         {
-            var totalOrders = await _context.Orders.CountAsync();
-            var totalUsers = await _context.Users.CountAsync();
+            var restaurantsCount = await _context.Restaurants.CountAsync();
+            var openRestaurantsCount = await _context.Restaurants.CountAsync(r => r.IsOpen);
+            var menuItemsCount = await _context.MenuItems.CountAsync();
 
-            var statusCounts = await _context.Orders
-                .GroupBy(o => o.Status)
-                .Select(g => new { Status = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Status, x => x.Count);
+            // Calculate active orders and revenue
+            IQueryable<Order> ordersQuery = _context.Orders;
+            
+            if (userId.HasValue)
+            {
+                ordersQuery = ordersQuery.Where(o => o.RelatedUserId == userId.Value);
+            }
 
-            var typeCounts = await _context.Orders
-                .GroupBy(o => o.TypeOrPriority)
-                .Select(g => new { Type = g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Type, x => x.Count);
+            var activeOrdersCount = await ordersQuery.CountAsync(o => o.Status != "Cancelled");
+            var totalRevenue = await ordersQuery
+                .Where(o => o.Status != "Cancelled")
+                .SumAsync(o => o.Total);
 
             var response = new
             {
-                TotalOrders = totalOrders,
-                TotalUsers = totalUsers,
-                ByStatus = statusCounts,
-                ByType = typeCounts
+                Restaurants = restaurantsCount,
+                OpenRestaurants = openRestaurantsCount,
+                MenuItems = menuItemsCount,
+                CartItems = 0, // Handled locally in frontend
+                ActiveOrders = activeOrdersCount,
+                Revenue = totalRevenue
             };
 
             return Ok(response);

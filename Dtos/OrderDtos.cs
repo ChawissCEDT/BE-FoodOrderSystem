@@ -1,57 +1,81 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Backend.Dtos
 {
+    public class OrderItemResponseDto
+    {
+        public int Id { get; set; }
+        public int? MenuItemId { get; set; }
+        public string Name { get; set; } = null!;
+        public double Price { get; set; }
+        public int Quantity { get; set; }
+    }
+
     public class OrderResponseDto
     {
         public int Id { get; set; }
+        public int RelatedUserId { get; set; }
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
-        public string Status { get; set; } = null!;
         public string TypeOrPriority { get; set; } = null!;
+        public string CustomerName { get; set; } = null!;
+        public string Phone { get; set; } = null!;
+        public string Address { get; set; } = null!;
+        public string? Note { get; set; }
+        public string Status { get; set; } = null!;
+        public double Subtotal { get; set; }
+        public double DeliveryFee { get; set; }
+        public double Total { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int RelatedUserId { get; set; }
-        public UserResponseDto RelatedUser { get; set; } = null!;
+        public List<OrderItemResponseDto> Lines { get; set; } = new();
+    }
+
+    public class CartLineDto
+    {
+        [Required(ErrorMessage = "MenuItemId is required.")]
+        public int MenuItemId { get; set; }
+
+        [Required(ErrorMessage = "Quantity is required.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
+        public int Quantity { get; set; }
     }
 
     public class CreateOrderRequestDto
     {
-        [Required(ErrorMessage = "Title (OrderName) is required.")]
-        [StringLength(150, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 150 characters.")]
+        [Required(ErrorMessage = "Title is required.")]
+        [StringLength(100, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 100 characters.")]
         public string Title { get; set; } = null!;
 
-        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "TypeOrPriority (e.g. Delivery/Pickup) is required.")]
-        [RegularExpression("^(Delivery|Pickup)$", ErrorMessage = "TypeOrPriority must be either 'Delivery' or 'Pickup'.")]
-        public string TypeOrPriority { get; set; } = null!;
+        [Required(ErrorMessage = "TypeOrPriority is required.")]
+        public string TypeOrPriority { get; set; } = "Delivery";
+
+        [Required(ErrorMessage = "CustomerName is required.")]
+        public string CustomerName { get; set; } = null!;
+
+        [Required(ErrorMessage = "Phone is required.")]
+        public string Phone { get; set; } = null!;
+
+        [Required(ErrorMessage = "Address is required.")]
+        public string Address { get; set; } = null!;
+
+        public string? Note { get; set; }
 
         [Required(ErrorMessage = "RelatedUserId is required.")]
-        [Range(1, int.MaxValue, ErrorMessage = "RelatedUserId must be a positive integer.")]
         public int RelatedUserId { get; set; }
+
+        [Required(ErrorMessage = "At least one order line is required.")]
+        public List<CartLineDto> Lines { get; set; } = new();
     }
 
     public class UpdateOrderRequestDto
     {
-        [Required(ErrorMessage = "Title (OrderName) is required.")]
-        [StringLength(150, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 150 characters.")]
-        public string Title { get; set; } = null!;
+        [Required(ErrorMessage = "Address is required.")]
+        public string Address { get; set; } = null!;
 
-        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters.")]
-        public string? Description { get; set; }
-
-        [Required(ErrorMessage = "Status is required.")]
-        [RegularExpression("^(Pending|Preparing|Completed|Cancelled)$", ErrorMessage = "Status must be 'Pending', 'Preparing', 'Completed', or 'Cancelled'.")]
-        public string Status { get; set; } = null!;
-
-        [Required(ErrorMessage = "TypeOrPriority (e.g. Delivery/Pickup) is required.")]
-        [RegularExpression("^(Delivery|Pickup)$", ErrorMessage = "TypeOrPriority must be either 'Delivery' or 'Pickup'.")]
-        public string TypeOrPriority { get; set; } = null!;
-
-        [Required(ErrorMessage = "RelatedUserId is required.")]
-        [Range(1, int.MaxValue, ErrorMessage = "RelatedUserId must be a positive integer.")]
-        public int RelatedUserId { get; set; }
+        public string? Note { get; set; }
     }
 }

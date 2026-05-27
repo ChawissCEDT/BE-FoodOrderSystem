@@ -11,6 +11,9 @@ namespace Backend.Data
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Order> Orders => Set<Order>();
+        public DbSet<Restaurant> Restaurants => Set<Restaurant>();
+        public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +25,24 @@ namespace Backend.Data
                 .WithMany(u => u.Orders)
                 .HasForeignKey(o => o.RelatedUserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MenuItem>()
+                .HasOne(m => m.Restaurant)
+                .WithMany(r => r.MenuItems)
+                .HasForeignKey(m => m.RestaurantId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.MenuItem)
+                .WithMany()
+                .HasForeignKey(oi => oi.MenuItemId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

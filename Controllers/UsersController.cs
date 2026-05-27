@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Dtos;
 using Backend.Entities;
+using Backend.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,51 +25,94 @@ namespace Backend.Controllers
 
         // GET: api/users
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponseDto>))]
-        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetUsers()
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AuthUserResponseDto>))]
+        public async Task<ActionResult<IEnumerable<AuthUserResponseDto>>> GetUsers()
         {
             var users = await _context.Users
-                .Select(u => new UserResponseDto
+                .Select(u => new AuthUserResponseDto
                 {
                     Id = u.Id,
-                    FullName = u.FullName,
-                    Email = u.Email
+                    Name = u.FullName,
+                    Email = u.Email,
+                    Phone = u.Phone,
+                    Address = u.Address,
+                    CreatedAt = DateTime.UtcNow
                 })
                 .ToListAsync();
 
             return Ok(users);
         }
 
-        // POST: api/users
-        [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(UserResponseDto))]
+        // POST: api/users/register
+        [HttpPost("register")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthUserResponseDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UserResponseDto>> CreateUser([FromBody] CreateUserRequestDto request)
+        public async Task<ActionResult<AuthUserResponseDto>> Register([FromBody] RegisterRequestDto request)
         {
+            var email = request.Email.Trim().ToLower();
+
             // Unique Email Check
-            if (await _context.Users.AnyAsync(u => u.Email.ToLower() == request.Email.ToLower()))
+            if (await _context.Users.AnyAsync(u => u.Email.ToLower() == email))
             {
-                ModelState.AddModelError("Email", "Email address is already registered.");
-                return BadRequest(ModelState);
+                return BadRequest(new { Message = "This email address is already registered." });
             }
 
             var user = new User
             {
-                FullName = request.FullName,
-                Email = request.Email.Trim().ToLower()
+                FullName = request.Name.Trim(),
+                Email = email,
+                Phone = request.Phone.Trim(),
+                Address = request.Address.Trim(),
+                PasswordHash = PasswordHasher.HashPassword(request.Password)
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            var response = new UserResponseDto
+            var response = new AuthUserResponseDto
             {
                 Id = user.Id,
-                FullName = user.FullName,
-                Email = user.Email
+                Name = user.FullName,
+                Email = user.Email,
+                Phone = user.Phone,
+                Address = user.Address,
+                CreatedAt = DateTime.UtcNow
             };
 
-            return CreatedAtAction(nameof(GetUsers), new { }, response);
+            return Ok(response);
+        }
+
+        // POST: api/users/login
+        [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthUserResponseDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<AuthUserResponseDto>> Login([FromBody] LoginRequestDto request)
+        {
+            var email = request.Email.Trim().ToLower();
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                return BadRequest(new { Message = "Email or password is incorrect." });
+            }
+
+            if (!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash))
+            {
+                return BadRequest(new { Message = "Email or password is incorrect." });
+            }
+
+            var response = new AuthUserResponseDto
+            {
+                Id = user.Id,
+                Name = user.FullName,
+                Email = user.Email,
+                Phone = user.Phone,
+                Address = user.Address,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            return Ok(response);
         }
     }
 }
