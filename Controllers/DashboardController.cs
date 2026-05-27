@@ -42,12 +42,20 @@ namespace Backend.Controllers
                 .Where(o => o.Status != "Cancelled")
                 .SumAsync(o => o.Total);
 
+            var cartItemsCount = 0;
+            if (userId.HasValue)
+            {
+                cartItemsCount = await _context.CartItems
+                    .Where(ci => ci.UserId == userId.Value)
+                    .SumAsync(ci => (int?)ci.Quantity) ?? 0;
+            }
+
             var response = new
             {
                 Restaurants = restaurantsCount,
                 OpenRestaurants = openRestaurantsCount,
                 MenuItems = menuItemsCount,
-                CartItems = 0, // Handled locally in frontend
+                CartItems = cartItemsCount,
                 ActiveOrders = activeOrdersCount,
                 Revenue = totalRevenue
             };

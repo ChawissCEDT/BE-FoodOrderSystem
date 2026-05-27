@@ -33,6 +33,7 @@ namespace Backend.Data
                         DeliveryTime = "20-30 min",
                         DeliveryFee = 35,
                         ImageTone = "thai",
+                        ImageUrl = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",
                         IsOpen = true
                     },
                     new()
@@ -45,6 +46,7 @@ namespace Backend.Data
                         DeliveryTime = "25-35 min",
                         DeliveryFee = 40,
                         ImageTone = "pasta",
+                        ImageUrl = "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=900&q=80",
                         IsOpen = true
                     },
                     new()
@@ -57,6 +59,7 @@ namespace Backend.Data
                         DeliveryTime = "18-28 min",
                         DeliveryFee = 30,
                         ImageTone = "burger",
+                        ImageUrl = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80",
                         IsOpen = true
                     },
                     new()
@@ -69,6 +72,7 @@ namespace Backend.Data
                         DeliveryTime = "22-32 min",
                         DeliveryFee = 25,
                         ImageTone = "green",
+                        ImageUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=80",
                         IsOpen = false
                     }
                 };
@@ -83,23 +87,23 @@ namespace Backend.Data
                 var menuItems = new MenuItem[]
                 {
                     // Siam Street Kitchen
-                    new() { Id = 101, RestaurantId = 1, Name = "Basil Chicken Rice", Description = "Holy basil chicken, jasmine rice, crispy egg, and chili fish sauce.", Category = "Rice", Price = 89, Popular = true },
-                    new() { Id = 102, RestaurantId = 1, Name = "Tom Yum Seafood Noodles", Description = "Spicy-sour broth with shrimp, squid, mushrooms, lime, and roasted chili.", Category = "Noodles", Price = 129, Popular = true },
-                    new() { Id = 103, RestaurantId = 1, Name = "Thai Milk Tea", Description = "Strong tea, creamy milk, and light brown sugar over ice.", Category = "Drink", Price = 45, Popular = false },
-
+                    new() { Id = 101, RestaurantId = 1, Name = "Basil Chicken Rice", Description = "Holy basil chicken, jasmine rice, crispy egg, and chili fish sauce.", Category = "Rice", ImageUrl = "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=500&q=80", Price = 89, Popular = true },
+                    new() { Id = 102, RestaurantId = 1, Name = "Tom Yum Seafood Noodles", Description = "Spicy-sour broth with shrimp, squid, mushrooms, lime, and roasted chili.", Category = "Noodles", ImageUrl = "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=500&q=80", Price = 129, Popular = true },
+                    new() { Id = 103, RestaurantId = 1, Name = "Thai Milk Tea", Description = "Strong tea, creamy milk, and light brown sugar over ice.", Category = "Drink", ImageUrl = "https://images.unsplash.com/photo-1497534446932-c925b458314e?auto=format&fit=crop&w=500&q=80", Price = 45, Popular = false },
+ 
                     // Pasta Lab
-                    new() { Id = 201, RestaurantId = 2, Name = "Carbonara Bowl", Description = "Cream sauce, smoked bacon, parmesan, black pepper, and spaghetti.", Category = "Pasta", Price = 139, Popular = true },
-                    new() { Id = 202, RestaurantId = 2, Name = "Pomodoro Pasta", Description = "Tomato sauce, garlic, basil, olive oil, and parmesan.", Category = "Pasta", Price = 119, Popular = false },
-                    new() { Id = 203, RestaurantId = 2, Name = "Garlic Bread", Description = "Toasted bread with garlic butter and herbs.", Category = "Side", Price = 59, Popular = false },
-
+                    new() { Id = 201, RestaurantId = 2, Name = "Carbonara Bowl", Description = "Cream sauce, smoked bacon, parmesan, black pepper, and spaghetti.", Category = "Pasta", ImageUrl = "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=500&q=80", Price = 139, Popular = true },
+                    new() { Id = 202, RestaurantId = 2, Name = "Pomodoro Pasta", Description = "Tomato sauce, garlic, basil, olive oil, and parmesan.", Category = "Pasta", ImageUrl = "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=500&q=80", Price = 119, Popular = false },
+                    new() { Id = 203, RestaurantId = 2, Name = "Garlic Bread", Description = "Toasted bread with garlic butter and herbs.", Category = "Side", ImageUrl = "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=500&q=80", Price = 59, Popular = false },
+ 
                     // Burger Yard
-                    new() { Id = 301, RestaurantId = 3, Name = "Classic Beef Burger", Description = "Beef patty, cheddar, pickles, onion, lettuce, and house sauce.", Category = "Burger", Price = 149, Popular = true },
-                    new() { Id = 302, RestaurantId = 3, Name = "Chicken Bites", Description = "Crispy chicken pieces with honey mustard dip.", Category = "Side", Price = 95, Popular = false },
-                    new() { Id = 303, RestaurantId = 3, Name = "Loaded Fries", Description = "Fries with cheese sauce, bacon bits, and scallion.", Category = "Side", Price = 99, Popular = true },
-
+                    new() { Id = 301, RestaurantId = 3, Name = "Classic Beef Burger", Description = "Beef patty, cheddar, pickles, onion, lettuce, and house sauce.", Category = "Burger", ImageUrl = "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80", Price = 149, Popular = true },
+                    new() { Id = 302, RestaurantId = 3, Name = "Chicken Bites", Description = "Crispy chicken pieces with honey mustard dip.", Category = "Side", ImageUrl = "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=500&q=80", Price = 95, Popular = false },
+                    new() { Id = 303, RestaurantId = 3, Name = "Loaded Fries", Description = "Fries with cheese sauce, bacon bits, and scallion.", Category = "Side", ImageUrl = "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=500&q=80", Price = 99, Popular = true },
+ 
                     // Green Bowl
-                    new() { Id = 401, RestaurantId = 4, Name = "Salmon Protein Bowl", Description = "Grilled salmon, brown rice, edamame, corn, and sesame dressing.", Category = "Bowl", Price = 169, Popular = true },
-                    new() { Id = 402, RestaurantId = 4, Name = "Avocado Salad", Description = "Mixed greens, avocado, tomato, cucumber, and lemon vinaigrette.", Category = "Salad", Price = 129, Popular = false }
+                    new() { Id = 401, RestaurantId = 4, Name = "Salmon Protein Bowl", Description = "Grilled salmon, brown rice, edamame, corn, and sesame dressing.", Category = "Bowl", ImageUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=80", Price = 169, Popular = true },
+                    new() { Id = 402, RestaurantId = 4, Name = "Avocado Salad", Description = "Mixed greens, avocado, tomato, cucumber, and lemon vinaigrette.", Category = "Salad", ImageUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=500&q=80", Price = 129, Popular = false }
                 };
 
                 context.MenuItems.AddRange(menuItems);
@@ -118,7 +122,8 @@ namespace Backend.Data
                         Email = "john.doe@example.com",
                         Phone = "0812345678",
                         Address = "123 Siam Sq, Pathum Wan, Bangkok 10330",
-                        PasswordHash = PasswordHasher.HashPassword("password123")
+                        PasswordHash = PasswordHasher.HashPassword("password123"),
+                        Role = "Customer"
                     },
                     new()
                     {
@@ -127,7 +132,8 @@ namespace Backend.Data
                         Email = "jane.smith@example.com",
                         Phone = "0823456789",
                         Address = "456 Sukhumvit Rd, Khlong Toei, Bangkok 10110",
-                        PasswordHash = PasswordHasher.HashPassword("password123")
+                        PasswordHash = PasswordHasher.HashPassword("password123"),
+                        Role = "Customer"
                     },
                     new()
                     {
@@ -136,7 +142,18 @@ namespace Backend.Data
                         Email = "bob.johnson@example.com",
                         Phone = "0834567890",
                         Address = "789 Phahonyothin Rd, Chatuchak, Bangkok 10900",
-                        PasswordHash = PasswordHasher.HashPassword("password123")
+                        PasswordHash = PasswordHasher.HashPassword("password123"),
+                        Role = "Customer"
+                    },
+                    new()
+                    {
+                        Id = 4,
+                        FullName = "System Admin",
+                        Email = "admin@example.com",
+                        Phone = "0845678901",
+                        Address = "System HQ, Bangkok",
+                        PasswordHash = PasswordHasher.HashPassword("admin123"),
+                        Role = "Admin"
                     }
                 };
 

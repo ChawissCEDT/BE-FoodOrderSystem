@@ -78,4 +78,10 @@ namespace Backend.Dtos
 
         public string? Note { get; set; }
     }
+
+    public class UpdateOrderStatusRequestDto
+    {
+        [Required(ErrorMessage = "Status is required.")]
+        public string Status { get; set; } = null!;
+    }
 }

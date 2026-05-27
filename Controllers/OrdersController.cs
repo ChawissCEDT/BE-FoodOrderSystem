@@ -248,6 +248,31 @@ namespace Backend.Controllers
             return Ok(new { Message = "Order cancelled successfully.", Status = order.Status });
         }
 
+        // PUT: api/orders/{id}/status
+        [HttpPut("{id}/status")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequestDto request)
+        {
+            var allowedStatuses = new[] { "Pending", "Preparing", "Completed", "Cancelled" };
+            if (!allowedStatuses.Contains(request.Status))
+            {
+                return BadRequest(new { Message = $"Invalid status. Allowed values are: {string.Join(", ", allowedStatuses)}" });
+            }
+
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null)
+            {
+                return NotFound(new { Message = $"Order with ID {id} not found." });
+            }
+
+            order.Status = request.Status;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Order status updated successfully.", Status = order.Status });
+        }
+
         // DELETE: api/orders/{id}
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]

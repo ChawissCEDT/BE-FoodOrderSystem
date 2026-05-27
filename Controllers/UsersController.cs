@@ -36,6 +36,7 @@ namespace Backend.Controllers
                     Email = u.Email,
                     Phone = u.Phone,
                     Address = u.Address,
+                    Role = u.Role,
                     CreatedAt = DateTime.UtcNow
                 })
                 .ToListAsync();
@@ -63,7 +64,8 @@ namespace Backend.Controllers
                 Email = email,
                 Phone = request.Phone.Trim(),
                 Address = request.Address.Trim(),
-                PasswordHash = PasswordHasher.HashPassword(request.Password)
+                PasswordHash = PasswordHasher.HashPassword(request.Password),
+                Role = "Customer"
             };
 
             _context.Users.Add(user);
@@ -76,6 +78,7 @@ namespace Backend.Controllers
                 Email = user.Email,
                 Phone = user.Phone,
                 Address = user.Address,
+                Role = user.Role,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -109,6 +112,7 @@ namespace Backend.Controllers
                 Email = user.Email,
                 Phone = user.Phone,
                 Address = user.Address,
+                Role = user.Role,
                 CreatedAt = DateTime.UtcNow
             };
 

@@ -13,6 +13,7 @@ namespace Backend.Entities
         public required string DeliveryTime { get; set; }
         public double DeliveryFee { get; set; }
         public required string ImageTone { get; set; }
+        public required string ImageUrl { get; set; }
         public bool IsOpen { get; set; }
 
         // Navigation property for menu items
