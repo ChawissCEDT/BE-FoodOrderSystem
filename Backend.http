@@ -1,0 +1,48 @@
+@Backend_HostAddress = http://localhost:5146
+
+### Get All Users
+GET {{Backend_HostAddress}}/api/users
+Accept: application/json
+
+### Register New User
+POST {{Backend_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "fullName": "Alice Green",
+  "email": "alice.green@example.com"
+}
+
+### Get All Orders
+GET {{Backend_HostAddress}}/api/orders
+Accept: application/json
+
+### Create New Order (Delivery)
+POST {{Backend_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "title": "Pepperoni Pizza",
+  "description": "Large pan pizza with extra pepperoni",
+  "typeOrPriority": "Delivery",
+  "relatedUserId": 1
+}
+
+### Update Order Status
+PUT {{Backend_HostAddress}}/api/orders/2
+Content-Type: application/json
+
+{
+  "title": "Cheeseburger Meal",
+  "description": "Double beef patty with extra cheese and curly fries",
+  "status": "Completed",
+  "typeOrPriority": "Delivery",
+  "relatedUserId": 2
+}
+
+### Get Dashboard Statistics
+GET {{Backend_HostAddress}}/api/dashboard/summary
+Accept: application/json
+
+### Cancel / Delete Order
+DELETE {{Backend_HostAddress}}/api/orders/5

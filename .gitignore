@@ -1,0 +1,39 @@
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bin]/
+[Obj]/
+bin/
+obj/
+
+# Visual Studio cache and settings
+.vs/
+.vscode/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.useroverride
+*.userosscache
+*.sln.docstates
+
+# Local databases and SQLite
+*.db
+*.db-shm
+*.db-wal
+foodorder.db
+
+# UserSecrets
+secrets.json
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
