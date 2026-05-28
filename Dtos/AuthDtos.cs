@@ -44,5 +44,6 @@ namespace Backend.Dtos
         public string Address { get; set; } = null!;
         public string Role { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
+        public string? Token { get; set; }
     }
 }

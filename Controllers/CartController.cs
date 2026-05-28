@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Dtos;
 using Backend.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly FoodOrderDbContext _context;
@@ -28,6 +31,16 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<CartItemResponseDto>>> GetCart([FromQuery] int userId)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (userRole != "Admin" && userId != currentUserId)
+            {
+                return Forbid();
+            }
+
             var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
             if (!userExists)
             {
@@ -44,6 +57,16 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<CartItemResponseDto>>> AddOrUpdateCartItem([FromBody] CartItemRequestDto request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (userRole != "Admin" && request.UserId != currentUserId)
+            {
+                return Forbid();
+            }
+
             var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId);
             if (!userExists)
             {
@@ -90,6 +113,16 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<CartItemResponseDto>>> MergeCart([FromBody] CartMergeRequestDto request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (userRole != "Admin" && request.UserId != currentUserId)
+            {
+                return Forbid();
+            }
+
             var userExists = await _context.Users.AnyAsync(u => u.Id == request.UserId);
             if (!userExists)
             {
@@ -98,7 +131,13 @@ namespace Backend.Controllers
 
             if (request.Items != null && request.Items.Count > 0)
             {
-                var menuItemIds = request.Items.Select(i => i.MenuItemId).ToList();
+                // Pre-aggregate input items to avoid database composite key violations on duplicate MenuItemIds
+                var aggregatedItems = request.Items
+                    .GroupBy(i => i.MenuItemId)
+                    .Select(g => new CartLineDto { MenuItemId = g.Key, Quantity = g.Sum(x => x.Quantity) })
+                    .ToList();
+
+                var menuItemIds = aggregatedItems.Select(i => i.MenuItemId).ToList();
                 var menuItems = await _context.MenuItems
                     .Where(m => menuItemIds.Contains(m.Id))
                     .ToListAsync();
@@ -107,7 +146,7 @@ namespace Backend.Controllers
                     .Where(ci => ci.UserId == request.UserId)
                     .ToListAsync();
 
-                foreach (var mergeItem in request.Items)
+                foreach (var mergeItem in aggregatedItems)
                 {
                     if (!menuItems.Any(m => m.Id == mergeItem.MenuItemId)) continue;
 
@@ -145,6 +184,16 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<CartItemResponseDto>>> RemoveCartItem(int menuItemId, [FromQuery] int userId)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (userRole != "Admin" && userId != currentUserId)
+            {
+                return Forbid();
+            }
+
             var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
             if (!userExists)
             {
@@ -170,6 +219,16 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<CartItemResponseDto>>> ClearCart([FromQuery] int userId)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (userRole != "Admin" && userId != currentUserId)
+            {
+                return Forbid();
+            }
+
             var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
             if (!userExists)
             {

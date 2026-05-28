@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Dtos;
 using Backend.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class OrdersController : ControllerBase
     {
         private readonly FoodOrderDbContext _context;
@@ -27,11 +30,21 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<OrderResponseDto>))]
         public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetOrders([FromQuery] int? userId)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
             IQueryable<Order> query = _context.Orders
                 .Include(o => o.OrderItems)
                 .OrderByDescending(o => o.CreatedAt);
 
-            if (userId.HasValue)
+            // Customers are restricted to their own orders. Admins can view all or filter by userId.
+            if (userRole != "Admin")
+            {
+                query = query.Where(o => o.RelatedUserId == currentUserId);
+            }
+            else if (userId.HasValue)
             {
                 query = query.Where(o => o.RelatedUserId == userId.Value);
             }
@@ -73,6 +86,17 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<OrderResponseDto>> CreateOrder([FromBody] CreateOrderRequestDto request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            // Restrict non-admins from placing orders for other user accounts
+            if (userRole != "Admin" && request.RelatedUserId != currentUserId)
+            {
+                return Forbid();
+            }
+
             // Verify User exists
             var user = await _context.Users.FindAsync(request.RelatedUserId);
             if (user == null)
@@ -98,8 +122,6 @@ namespace Backend.Controllers
             }
 
             double subtotal = 0;
-            var deliveryFeesByRestaurant = new HashSet<double>();
-
             var order = new Order
             {
                 Title = request.Title,
@@ -123,8 +145,18 @@ namespace Backend.Controllers
             {
                 var menuItem = menuItems.First(m => m.Id == line.MenuItemId);
                 
+                // Validate item availability and restaurant status
+                if (!menuItem.IsAvailable)
+                {
+                    return BadRequest(new { Message = $"Menu item '{menuItem.Name}' is not available." });
+                }
+
+                if (!menuItem.Restaurant.IsOpen)
+                {
+                    return BadRequest(new { Message = $"Restaurant '{menuItem.Restaurant.Name}' is currently closed." });
+                }
+
                 subtotal += menuItem.Price * line.Quantity;
-                deliveryFeesByRestaurant.Add(menuItem.Restaurant.DeliveryFee);
 
                 var orderItem = new OrderItem
                 {
@@ -137,7 +169,14 @@ namespace Backend.Controllers
                 orderItemsList.Add(orderItem);
             }
 
-            double deliveryFee = deliveryFeesByRestaurant.Sum();
+            // Correct calculation: fetch distinct restaurants by ID to sum distinct delivery fees
+            var distinctRestaurants = menuItems
+                .Select(m => m.Restaurant)
+                .GroupBy(r => r.Id)
+                .Select(g => g.First())
+                .ToList();
+
+            double deliveryFee = distinctRestaurants.Sum(r => r.DeliveryFee);
             
             order.Subtotal = subtotal;
             order.DeliveryFee = deliveryFee;
@@ -182,6 +221,11 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] UpdateOrderRequestDto request)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -189,6 +233,11 @@ namespace Backend.Controllers
             if (order == null)
             {
                 return NotFound(new { Message = $"Order with ID {id} not found." });
+            }
+
+            if (userRole != "Admin" && order.RelatedUserId != currentUserId)
+            {
+                return Forbid();
             }
 
             order.Address = request.Address.Trim();
@@ -231,10 +280,20 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CancelOrder(int id)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
             var order = await _context.Orders.FindAsync(id);
             if (order == null)
             {
                 return NotFound(new { Message = $"Order with ID {id} not found." });
+            }
+
+            if (userRole != "Admin" && order.RelatedUserId != currentUserId)
+            {
+                return Forbid();
             }
 
             if (order.Status == "Cancelled")
@@ -255,6 +314,12 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusRequestDto request)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole != "Admin")
+            {
+                return Forbid();
+            }
+
             var allowedStatuses = new[] { "Pending", "Preparing", "Completed", "Cancelled" };
             if (!allowedStatuses.Contains(request.Status))
             {
@@ -279,10 +344,20 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteOrder(int id)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return Unauthorized();
+            int currentUserId = int.Parse(userIdClaim.Value);
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
             var order = await _context.Orders.FindAsync(id);
             if (order == null)
             {
                 return NotFound(new { Message = $"Order with ID {id} not found." });
+            }
+
+            if (userRole != "Admin" && order.RelatedUserId != currentUserId)
+            {
+                return Forbid();
             }
 
             _context.Orders.Remove(order);

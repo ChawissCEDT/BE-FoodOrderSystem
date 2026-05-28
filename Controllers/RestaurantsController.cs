@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -77,6 +78,7 @@ namespace Backend.Controllers
 
         // PUT: api/restaurants/{id}/toggle-status
         [HttpPut("{id}/toggle-status")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ToggleRestaurantStatus(int id)
@@ -100,6 +102,7 @@ namespace Backend.Controllers
 
         // POST: api/restaurants
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(RestaurantResponseDto))]
         public async Task<ActionResult<RestaurantResponseDto>> CreateRestaurant([FromBody] CreateRestaurantRequestDto request)
         {
@@ -138,6 +141,7 @@ namespace Backend.Controllers
 
         // PUT: api/restaurants/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RestaurantResponseDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateRestaurant(int id, [FromBody] UpdateRestaurantRequestDto request)
@@ -179,6 +183,7 @@ namespace Backend.Controllers
 
         // DELETE: api/restaurants/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteRestaurant(int id)
@@ -197,6 +202,7 @@ namespace Backend.Controllers
 
         // GET: api/restaurants/{id}/menu-admin (returns all items, including unavailable)
         [HttpGet("{id}/menu-admin")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<MenuItemResponseDto>))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<MenuItemResponseDto>>> GetRestaurantMenuAdmin(int id)
@@ -228,6 +234,7 @@ namespace Backend.Controllers
 
         // POST: api/restaurants/{restaurantId}/menu
         [HttpPost("{restaurantId}/menu")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(MenuItemResponseDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<MenuItemResponseDto>> CreateMenuItem(int restaurantId, [FromBody] CreateMenuItemRequestDto request)
@@ -271,6 +278,7 @@ namespace Backend.Controllers
 
         // PUT: api/restaurants/menu/{id}
         [HttpPut("menu/{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MenuItemResponseDto))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateMenuItem(int id, [FromBody] UpdateMenuItemRequestDto request)
@@ -309,6 +317,7 @@ namespace Backend.Controllers
 
         // DELETE: api/restaurants/menu/{id}
         [HttpDelete("menu/{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteMenuItem(int id)

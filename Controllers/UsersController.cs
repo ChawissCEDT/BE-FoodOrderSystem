@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend.Data;
@@ -9,6 +12,8 @@ using Backend.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Controllers
 {
@@ -17,10 +22,12 @@ namespace Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly FoodOrderDbContext _context;
+        private readonly IConfiguration _config;
 
-        public UsersController(FoodOrderDbContext context)
+        public UsersController(FoodOrderDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         // GET: api/users
@@ -79,7 +86,8 @@ namespace Backend.Controllers
                 Phone = user.Phone,
                 Address = user.Address,
                 Role = user.Role,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Token = GenerateJwtToken(user)
             };
 
             return Ok(response);
@@ -113,10 +121,33 @@ namespace Backend.Controllers
                 Phone = user.Phone,
                 Address = user.Address,
                 Role = user.Role,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Token = GenerateJwtToken(user)
             };
 
             return Ok(response);
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.FullName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role)
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:ExpireMinutes"] ?? "1440")),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

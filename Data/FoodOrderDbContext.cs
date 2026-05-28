@@ -46,6 +46,10 @@ namespace Backend.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<CartItem>()
+                .HasIndex(ci => new { ci.UserId, ci.MenuItemId })
+                .IsUnique();
+
+            modelBuilder.Entity<CartItem>()
                 .HasOne(ci => ci.User)
                 .WithMany(u => u.CartItems)
                 .HasForeignKey(ci => ci.UserId)
