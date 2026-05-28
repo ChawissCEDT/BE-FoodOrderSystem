@@ -30,27 +30,6 @@ namespace Backend.Controllers
             _config = config;
         }
 
-        // GET: api/users
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AuthUserResponseDto>))]
-        public async Task<ActionResult<IEnumerable<AuthUserResponseDto>>> GetUsers()
-        {
-            var users = await _context.Users
-                .Select(u => new AuthUserResponseDto
-                {
-                    Id = u.Id,
-                    Name = u.FullName,
-                    Email = u.Email,
-                    Phone = u.Phone,
-                    Address = u.Address,
-                    Role = u.Role,
-                    CreatedAt = DateTime.UtcNow
-                })
-                .ToListAsync();
-
-            return Ok(users);
-        }
-
         // POST: api/users/register
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthUserResponseDto))]
